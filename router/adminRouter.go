@@ -7,12 +7,6 @@ import (
 func GetAdminRoutes() []Route {
 	return []Route {
 		Route {
-			Name: "adminLogin",
-			Method: "POST",
-			Path: "/admin-login",
-			HandlerFunc: controller.AdminLogin,
-		},
-		Route {
 			Name: "adminInsertUser",
 			Method: "POST",
 			Path: "/admin-insert-user",
