@@ -5,11 +5,11 @@ import (
 )
 
 func GetAdminRoutes() []Route {
-	return []Route {
-		Route {
-			Name: "adminInsertUser",
-			Method: "POST",
-			Path: "/admin-insert-user",
+	return []Route{
+		Route{
+			Name:        "adminInsertUser",
+			Method:      "POST",
+			Path:        "/admin-insert-user",
 			HandlerFunc: controller.TokenCheckerMiddleware(controller.InsertUser),
 		},
 	}

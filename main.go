@@ -1,11 +1,12 @@
 package main
 
-import(
+import (
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 	"os/signal"
-    "log"
-	"net/http"
+
 	"bitbucket.org/DanielFrag/gestor-de-ponto/router"
 )
 
@@ -13,7 +14,7 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
-        <-c
+		<-c
 		clean()
 	}()
 	port := os.Getenv("PORT")
@@ -21,7 +22,7 @@ func main() {
 		port = "8080"
 	}
 	r := router.NewRouter()
-	log.Fatal(http.ListenAndServe(":" + port, r))
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
 
 func clean() {
