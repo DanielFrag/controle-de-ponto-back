@@ -7,10 +7,12 @@ import (
 	"os"
 	"os/signal"
 
+	"bitbucket.org/DanielFrag/gestor-de-ponto/repository"
 	"bitbucket.org/DanielFrag/gestor-de-ponto/router"
 )
 
 func main() {
+	defer mainRecover()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
@@ -21,6 +23,7 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
+	repository.StartDB()
 	r := router.NewRouter()
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }
@@ -31,5 +34,14 @@ func clean() {
 }
 
 func stopDb() {
+	repository.StopDB()
 	fmt.Println("DB closed")
+}
+
+func mainRecover() {
+	rec := recover()
+	if rec != nil {
+		log.Println(rec)
+		clean()
+	}
 }

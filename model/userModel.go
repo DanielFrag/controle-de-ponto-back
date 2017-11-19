@@ -6,16 +6,18 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+//User application model
 type User struct {
-	Id       bson.ObjectId `bson:"_id"`
+	ID       bson.ObjectId `bson:"_id,omitempty"`
 	Login    string        `bson:"login"`
 	Password string        `bson:"password"`
 	Session  string        `bson:"session"`
 	Level    int           `bson:"level"`
 }
 
+//DateRegister application model
 type DateRegister struct {
-	Id        bson.ObjectId `bson:"_id"`
-	UserId    bson.ObjectId `bson:"userId"`
+	ID        bson.ObjectId `bson:"_id,omitempty"`
+	UserID    bson.ObjectId `bson:"userId"`
 	TimeStamp time.Time     `bson:"timeStamp"`
 }

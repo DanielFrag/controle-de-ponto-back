@@ -3,11 +3,13 @@ package controller
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
+	"gopkg.in/mgo.v2/bson"
+
 	"bitbucket.org/DanielFrag/gestor-de-ponto/business"
+	"bitbucket.org/DanielFrag/gestor-de-ponto/dto"
 	"bitbucket.org/DanielFrag/gestor-de-ponto/utils"
 	"github.com/gorilla/context"
 )
@@ -30,7 +32,6 @@ func TokenCheckerMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			authHeaderData := strings.Split(authHeader, " ")
 			if len(authHeaderData) > 1 {
 				payload, tokenError := utils.TokenChecker(authHeaderData[1])
-				log.Println(payload)
 				if tokenError == nil {
 					validatedToken, _ := utils.EncodeToken(payload)
 					context.Set(r, "tokenPayload", payload)
@@ -50,6 +51,28 @@ func TokenCheckerMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
+//UserSessionCheckerMiddleware middleware to check the user session
+func UserSessionCheckerMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tokenPayload := context.Get(r, "tokenPayload")
+		if tokenMap, ok := tokenPayload.(map[string]interface{}); ok {
+			userID, idOk := tokenMap["ID"].(string)
+			session, sessionOk := tokenMap["Session"].(string)
+			if idOk && sessionOk {
+				user := dto.AuthUser{
+					ID:      bson.ObjectIdHex(userID),
+					Session: session,
+				}
+				if business.CheckUserSession(user) {
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
+		}
+		http.Error(w, "Error reading user session", http.StatusBadRequest)
+	})
+}
+
 //UserLogin athenticate the user
 func UserLogin(w http.ResponseWriter, r *http.Request) {
 	body, bodyReadError := ioutil.ReadAll(r.Body)
@@ -58,12 +81,17 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer RecoverFunc(w, r)
-	tkPayload, adminLoginError := business.Authenticate(body)
-	if adminLoginError != nil {
-		http.Error(w, "Error to authenticate "+adminLoginError.Error(), http.StatusInternalServerError)
+	tkPayload, loginError := business.Authenticate(body)
+	if loginError != nil {
+		http.Error(w, "Error to authenticate "+loginError.Error(), http.StatusInternalServerError)
 		return
 	}
-	tokenString, tokenAssignError := utils.EncodeToken(tkPayload)
+	userWithSession, userSessionError := business.GenerateUserSession(tkPayload)
+	if userSessionError != nil {
+		http.Error(w, "Error to generate session "+userSessionError.Error(), http.StatusInternalServerError)
+		return
+	}
+	tokenString, tokenAssignError := utils.EncodeToken(userWithSession)
 	if tokenAssignError != nil {
 		http.Error(w, "Error to assign token "+tokenAssignError.Error(), http.StatusInternalServerError)
 		return
