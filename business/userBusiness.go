@@ -5,6 +5,8 @@ import (
 	"errors"
 	"time"
 
+	"gopkg.in/mgo.v2/bson"
+
 	"bitbucket.org/DanielFrag/gestor-de-ponto/utils"
 
 	"bitbucket.org/DanielFrag/gestor-de-ponto/dto"
@@ -81,6 +83,13 @@ func ExtractCustomTimestampFromBody(body []byte) (time.Time, error) {
 	var jsonMap map[string]time.Time
 	err := json.Unmarshal(body, &jsonMap)
 	return jsonMap["customTimestamp"], err
+}
+
+//ExtractIDFromBody extract the property "id" from body
+func ExtractIDFromBody(body []byte) (bson.ObjectId, error) {
+	var jsonMap map[string]bson.ObjectId
+	err := json.Unmarshal(body, &jsonMap)
+	return jsonMap["id"], err
 }
 
 //ExtractTimestampIntervalFromBody extract the timestamp interval from json

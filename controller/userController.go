@@ -94,3 +94,30 @@ func GetUserRegisterByDate(w http.ResponseWriter, r *http.Request) {
 	w.Write(utils.FormatJSON(m))
 	return
 }
+
+//RemoveDateRegister remove a single date register by id
+func RemoveDateRegister(w http.ResponseWriter, r *http.Request) {
+	body, bodyReadError := ioutil.ReadAll(r.Body)
+	if bodyReadError != nil {
+		http.Error(w, "Error reading body from requested URL "+bodyReadError.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer RecoverFunc(w, r)
+	dateRegisterID, extractIDError := business.ExtractIDFromBody(body)
+	if extractIDError != nil {
+		http.Error(w, "Error to extract date register id "+extractIDError.Error(), http.StatusInternalServerError)
+		return
+	}
+	removeDateRegisterError := repository.RemoveDateRegister(dateRegisterID)
+	if removeDateRegisterError != nil {
+		http.Error(w, "Error to remove the date register "+removeDateRegisterError.Error(), http.StatusInternalServerError)
+		return
+	}
+	str := context.Get(r, "token")
+	m := map[string]interface{}{
+		"token": str,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(utils.FormatJSON(m))
+	return
+}

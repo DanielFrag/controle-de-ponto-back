@@ -25,5 +25,11 @@ func GetUserRoutes() []Route {
 			Path:        "/user/registers-by-date",
 			HandlerFunc: controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.GetUserRegisterByDate)),
 		},
+		Route{
+			Name:        "removeRegister",
+			Method:      "POST",
+			Path:        "/user/remove-register",
+			HandlerFunc: controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.RemoveDateRegister)),
+		},
 	}
 }
