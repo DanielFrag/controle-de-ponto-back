@@ -1,9 +1,11 @@
 package business
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
+	"time"
+
+	"bitbucket.org/DanielFrag/gestor-de-ponto/utils"
 
 	"bitbucket.org/DanielFrag/gestor-de-ponto/dto"
 	"bitbucket.org/DanielFrag/gestor-de-ponto/model"
@@ -33,7 +35,7 @@ func authUser(client dto.Login) (dto.AuthUser, error) {
 //GenerateUserSession save a random session
 func GenerateUserSession(user dto.AuthUser) (dto.AuthUser, error) {
 	var err error
-	user.Session = "random session"
+	user.Session = utils.GenerateRandomAlphaNumericString(10)
 	err = repository.UpdateUserSession(user.ID, user.Session)
 	return user, err
 }
@@ -45,16 +47,6 @@ func CheckUserSession(user dto.AuthUser) bool {
 		return false
 	}
 	return true
-}
-
-//FormatToken format the json with the user's token that will be send to him
-func FormatToken(tokenString string) []byte {
-	b := new(bytes.Buffer)
-	m := map[string]string{
-		"token": tokenString,
-	}
-	json.NewEncoder(b).Encode(m)
-	return b.Bytes()
 }
 
 //ExtractUserFormBody return the User model extracted from requisition body
@@ -82,4 +74,18 @@ func isValidUserParams(user model.User) error {
 func CheckNewUser(user model.User) bool {
 	newUser := repository.GetUserByLogin(user.Login)
 	return newUser.Login != user.Login
+}
+
+//ExtractCustomTimestampFromBody extract the timestamp from json with key "customTimestamp"
+func ExtractCustomTimestampFromBody(body []byte) (time.Time, error) {
+	var jsonMap map[string]time.Time
+	err := json.Unmarshal(body, &jsonMap)
+	return jsonMap["customTimestamp"], err
+}
+
+//ExtractTimestampIntervalFromBody extract the timestamp interval from json
+func ExtractTimestampIntervalFromBody(body []byte) (time.Time, time.Time, error) {
+	var jsonMap map[string]time.Time
+	err := json.Unmarshal(body, &jsonMap)
+	return jsonMap["startTimestamp"], jsonMap["finishTimestamp"], err
 }

@@ -9,7 +9,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"bitbucket.org/DanielFrag/gestor-de-ponto/business"
-	"bitbucket.org/DanielFrag/gestor-de-ponto/dto"
+	"bitbucket.org/DanielFrag/gestor-de-ponto/model"
+	"bitbucket.org/DanielFrag/gestor-de-ponto/repository"
 	"bitbucket.org/DanielFrag/gestor-de-ponto/utils"
 	"github.com/gorilla/context"
 )
@@ -51,19 +52,17 @@ func TokenCheckerMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
-//UserSessionCheckerMiddleware middleware to check the user session
-func UserSessionCheckerMiddleware(next http.HandlerFunc) http.HandlerFunc {
+//UserMiddleware middleware to check the user session
+func UserMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenPayload := context.Get(r, "tokenPayload")
 		if tokenMap, ok := tokenPayload.(map[string]interface{}); ok {
 			userID, idOk := tokenMap["ID"].(string)
 			session, sessionOk := tokenMap["Session"].(string)
 			if idOk && sessionOk {
-				user := dto.AuthUser{
-					ID:      bson.ObjectIdHex(userID),
-					Session: session,
-				}
-				if business.CheckUserSession(user) {
+				user, err := repository.GetUserByID(bson.ObjectIdHex(userID))
+				if err == nil && user.Session == session {
+					context.Set(r, "user", user)
 					next.ServeHTTP(w, r)
 					return
 				}
@@ -96,7 +95,18 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error to assign token "+tokenAssignError.Error(), http.StatusInternalServerError)
 		return
 	}
+	m := map[string]interface{}{
+		"token": tokenString,
+	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(business.FormatToken(tokenString))
+	w.Write(utils.FormatJSON(m))
+	return
+}
+
+//UserLogout perform user logout
+func UserLogout(w http.ResponseWriter, r *http.Request) {
+	defer RecoverFunc(w, r)
+	user := context.Get(r, "user").(model.User)
+	repository.UpdateUserSession(user.ID, utils.GenerateRandomAlphaNumericString(15))
 	return
 }

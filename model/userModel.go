@@ -19,5 +19,5 @@ type User struct {
 type DateRegister struct {
 	ID        bson.ObjectId `bson:"_id,omitempty"`
 	UserID    bson.ObjectId `bson:"userId"`
-	TimeStamp time.Time     `bson:"timeStamp"`
+	Timestamp time.Time     `bson:"timeStamp"`
 }

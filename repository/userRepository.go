@@ -20,7 +20,7 @@ func GetUserByLogin(login string) model.User {
 	usersCollection := s.DB("dateRegister").C("Users")
 	var user model.User
 	usersCollection.
-		Find(map[string]string{
+		Find(bson.M{
 			"login": login,
 		}).
 		One(&user)
@@ -33,7 +33,11 @@ func GetUserByID(userID bson.ObjectId) (model.User, error) {
 	defer s.Close()
 	usersCollection := s.DB("dateRegister").C("Users")
 	var user model.User
-	err := usersCollection.Find(bson.M{"_id": userID}).One(&user)
+	err := usersCollection.
+		Find(bson.M{
+			"_id": userID,
+		}).
+		One(&user)
 	return user, err
 }
 

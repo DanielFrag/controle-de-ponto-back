@@ -13,5 +13,11 @@ func GetCommonRoutes() []Route {
 			Path:        "/login",
 			HandlerFunc: controller.UserLogin,
 		},
+		Route{
+			Name:        "logout",
+			Method:      "POST",
+			Path:        "/logout",
+			HandlerFunc: controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.UserLogout)),
+		},
 	}
 }
