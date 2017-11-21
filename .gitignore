@@ -1,5 +1,4 @@
 pkg 
-vendor
 *.exe
 .vscode
 gestor-de-ponto

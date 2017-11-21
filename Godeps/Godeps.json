@@ -1,6 +1,6 @@
 {
 	"ImportPath": "bitbucket.org/DanielFrag/gestor-de-ponto",
-	"GoVersion": "go1.9",
+	"GoVersion": "go1.8",
 	"GodepVersion": "v79",
 	"Deps": [
 		{
@@ -15,8 +15,8 @@
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
-			"Comment": "v1.6.0-1-g2d5fef0",
-			"Rev": "2d5fef06b891c971b14aa6f71ca5ab6c03a36e0e"
+			"Comment": "v1.5.0-6-g7625a85",
+			"Rev": "7625a85c14e615274a4ee4bc8654f72310a563e4"
 		},
 		{
 			"ImportPath": "gopkg.in/mgo.v2",
