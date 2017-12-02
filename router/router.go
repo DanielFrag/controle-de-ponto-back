@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	"bitbucket.org/DanielFrag/gestor-de-ponto/controller"
 	"github.com/gorilla/mux"
 )
 
@@ -15,7 +16,7 @@ type Route struct {
 }
 
 //NewRouter exports the api routes with his handler functions
-func NewRouter() *mux.Router {
+func NewRouter() http.Handler {
 	router := mux.NewRouter().StrictSlash(true)
 	adminRoutes := GetAdminRoutes()
 	userRoutes := GetUserRoutes()
@@ -25,22 +26,22 @@ func NewRouter() *mux.Router {
 			Methods(route.Method).
 			Path(route.Path).
 			Name(route.Name).
-			Handler(route.HandlerFunc)
+			HandlerFunc(route.HandlerFunc)
 	}
 	for _, route := range adminRoutes {
 		router.
 			Methods(route.Method).
 			Path(route.Path).
 			Name(route.Name).
-			Handler(route.HandlerFunc)
+			HandlerFunc(route.HandlerFunc)
 	}
 	for _, route := range userRoutes {
 		router.
 			Methods(route.Method).
 			Path(route.Path).
 			Name(route.Name).
-			Handler(route.HandlerFunc)
+			HandlerFunc(route.HandlerFunc)
 	}
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./www/")))
-	return router
+	return controller.CorsSetup(router)
 }
