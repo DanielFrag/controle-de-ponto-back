@@ -52,16 +52,16 @@ func TokenCheckerMiddleware(next http.HandlerFunc) http.HandlerFunc {
 					validatedToken, _ := utils.EncodeToken(payload)
 					context.Set(r, "tokenPayload", payload)
 					context.Set(r, "token", validatedToken)
-					next.ServeHTTP(w, r)
+					next(w, r)
 					return
 				}
 				middlewareError = tokenError
 			}
 		}
 		if middlewareError != nil {
-			http.Error(w, "Error reading access token: "+middlewareError.Error(), http.StatusInternalServerError)
+			http.Error(w, "Error reading access token: "+middlewareError.Error(), http.StatusForbidden)
 		} else {
-			http.Error(w, "Error: no token provided", http.StatusInternalServerError)
+			http.Error(w, "Error: no token provided", http.StatusBadRequest)
 		}
 		return
 	})
@@ -78,7 +78,7 @@ func UserMiddleware(next http.HandlerFunc) http.HandlerFunc {
 				user, err := repository.GetUserByID(bson.ObjectIdHex(userID))
 				if err == nil && user.Session == session {
 					context.Set(r, "user", user)
-					next.ServeHTTP(w, r)
+					next(w, r)
 					return
 				}
 			}
@@ -97,7 +97,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	defer RecoverFunc(w, r)
 	tkPayload, loginError := business.Authenticate(body)
 	if loginError != nil {
-		http.Error(w, "Error to authenticate "+loginError.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error to authenticate "+loginError.Error(), http.StatusForbidden)
 		return
 	}
 	userWithSession, userSessionError := business.GenerateUserSession(tkPayload)

@@ -3,6 +3,7 @@ package controller
 import (
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"bitbucket.org/DanielFrag/gestor-de-ponto/business"
@@ -10,28 +11,11 @@ import (
 	"bitbucket.org/DanielFrag/gestor-de-ponto/repository"
 	"bitbucket.org/DanielFrag/gestor-de-ponto/utils"
 	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
 )
 
-//RegisterNowTimestamp register the now timestamp
-func RegisterNowTimestamp(w http.ResponseWriter, r *http.Request) {
-	defer RecoverFunc(w, r)
-	user := context.Get(r, "user").(model.User)
-	insertDateRegisterError := registerTimestamp(user, time.Now())
-	if insertDateRegisterError != nil {
-		http.Error(w, "Error to register timestamp "+insertDateRegisterError.Error(), http.StatusBadRequest)
-		return
-	}
-	str := context.Get(r, "token")
-	m := map[string]interface{}{
-		"token": str,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(utils.FormatJSON(m))
-	return
-}
-
-//RegisterCustomTimestamp register a custom timestamp
-func RegisterCustomTimestamp(w http.ResponseWriter, r *http.Request) {
+//RegisterDate register a custom timestamp
+func RegisterDate(w http.ResponseWriter, r *http.Request) {
 	body, bodyReadError := ioutil.ReadAll(r.Body)
 	if bodyReadError != nil {
 		http.Error(w, "Error reading body from requested URL "+bodyReadError.Error(), http.StatusInternalServerError)
@@ -39,12 +23,17 @@ func RegisterCustomTimestamp(w http.ResponseWriter, r *http.Request) {
 	}
 	defer RecoverFunc(w, r)
 	user := context.Get(r, "user").(model.User)
-	customTimestamp, customTimestampError := business.ExtractCustomTimestampFromBody(body)
-	if customTimestampError != nil {
-		http.Error(w, "Error to extract custom timestamp from body "+customTimestampError.Error(), http.StatusBadRequest)
+	register, registerError := business.ExtractCustomTimestampFromBody(body)
+	if registerError != nil {
+		http.Error(w, "Error to extract custom timestamp from body "+registerError.Error(), http.StatusBadRequest)
 		return
 	}
-	registerTimestampError := registerTimestamp(user, customTimestamp)
+	dateRegister := model.DateRegister{
+		UserID:      user.ID,
+		Timestamp:   register.Timestamp,
+		Description: register.Description,
+	}
+	registerTimestampError := repository.InsertDateRegister(dateRegister)
 	if registerTimestampError != nil {
 		http.Error(w, "Error to register timestamp "+registerTimestampError.Error(), http.StatusInternalServerError)
 		return
@@ -58,29 +47,23 @@ func RegisterCustomTimestamp(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func registerTimestamp(user model.User, timestamp time.Time) error {
-	dateRegister := model.DateRegister{
-		UserID:    user.ID,
-		Timestamp: timestamp,
-	}
-	return repository.InsertDateRegister(dateRegister)
-}
-
-//GetUserRegisterByDate recover the registers by user, based on timestamp interval
-func GetUserRegisterByDate(w http.ResponseWriter, r *http.Request) {
-	body, bodyReadError := ioutil.ReadAll(r.Body)
-	if bodyReadError != nil {
-		http.Error(w, "Error reading body from requested URL "+bodyReadError.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer RecoverFunc(w, r)
+//GetUserRegistersByDate recover the registers by user, based on timestamp interval
+func GetUserRegistersByDate(w http.ResponseWriter, r *http.Request) {
 	user := context.Get(r, "user").(model.User)
-	startTs, finishTs, extractTsError := business.ExtractTimestampIntervalFromBody(body)
-	if extractTsError != nil {
-		http.Error(w, "Error reading timestamp interval "+extractTsError.Error(), http.StatusInternalServerError)
+	dates := mux.Vars(r)
+	if dates["start"] == "" || dates["finish"] == "" {
+		http.Error(w, "Error, invalid date interval", http.StatusBadRequest)
 		return
 	}
-	registers, registersError := repository.GetUserRegistersByDate(user.ID, startTs, finishTs)
+	start, startError := strconv.ParseInt(dates["start"], 10, 64)
+	finish, finishError := strconv.ParseInt(dates["finish"], 10, 64)
+	if startError != nil || finishError != nil || start > finish {
+		http.Error(w, "Error, invalid date format", http.StatusBadRequest)
+		return
+	}
+	start /= 1000
+	finish /= 1000
+	registers, registersError := repository.GetUserRegistersByDate(user.ID, time.Unix(start, 0), time.Unix(finish, 0))
 	if registersError != nil {
 		http.Error(w, "Error to recover the timestamp registers "+registersError.Error(), http.StatusInternalServerError)
 		return

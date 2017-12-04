@@ -3,7 +3,6 @@ package business
 import (
 	"encoding/json"
 	"errors"
-	"time"
 
 	"gopkg.in/mgo.v2/bson"
 
@@ -26,7 +25,7 @@ func Authenticate(body []byte) (dto.AuthUser, error) {
 
 func authUser(client dto.Login) (dto.AuthUser, error) {
 	user := repository.GetUserByLogin(client.Login)
-	if user.Login != client.Login {
+	if user.Login == "" || user.Login != client.Login || user.Password != client.Pass {
 		return dto.AuthUser{}, errors.New("authentication error")
 	}
 	return dto.AuthUser{
@@ -78,11 +77,11 @@ func CheckNewUser(user model.User) bool {
 	return newUser.Login != user.Login
 }
 
-//ExtractCustomTimestampFromBody extract the timestamp from json with key "customTimestamp"
-func ExtractCustomTimestampFromBody(body []byte) (time.Time, error) {
-	var jsonMap map[string]time.Time
-	err := json.Unmarshal(body, &jsonMap)
-	return jsonMap["customTimestamp"], err
+//ExtractCustomTimestampFromBody extract the timestamp register from json
+func ExtractCustomTimestampFromBody(body []byte) (dto.DateRegister, error) {
+	var register dto.DateRegister
+	err := json.Unmarshal(body, &register)
+	return register, err
 }
 
 //ExtractIDFromBody extract the property "id" from body
@@ -90,11 +89,4 @@ func ExtractIDFromBody(body []byte) (bson.ObjectId, error) {
 	var jsonMap map[string]bson.ObjectId
 	err := json.Unmarshal(body, &jsonMap)
 	return jsonMap["id"], err
-}
-
-//ExtractTimestampIntervalFromBody extract the timestamp interval from json
-func ExtractTimestampIntervalFromBody(body []byte) (time.Time, time.Time, error) {
-	var jsonMap map[string]time.Time
-	err := json.Unmarshal(body, &jsonMap)
-	return jsonMap["startTimestamp"], jsonMap["finishTimestamp"], err
 }

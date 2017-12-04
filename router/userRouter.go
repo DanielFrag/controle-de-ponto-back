@@ -8,26 +8,20 @@ import (
 func GetUserRoutes() []Route {
 	return []Route{
 		Route{
-			Name:        "nowTimestamp",
-			Method:      "POST",
-			Path:        "/user/register-now",
-			HandlerFunc: controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.RegisterNowTimestamp)),
-		},
-		Route{
 			Name:        "customTimestamp",
 			Method:      "POST",
 			Path:        "/user/register-date",
-			HandlerFunc: controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.RegisterCustomTimestamp)),
+			HandlerFunc: controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.RegisterDate)),
 		},
 		Route{
 			Name:        "registersByDate",
-			Method:      "POST",
-			Path:        "/user/registers-by-date",
-			HandlerFunc: controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.GetUserRegisterByDate)),
+			Method:      "GET",
+			Path:        "/user/registers/{start}/{finish}",
+			HandlerFunc: controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.GetUserRegistersByDate)),
 		},
 		Route{
 			Name:        "removeRegister",
-			Method:      "POST",
+			Method:      "DELETE",
 			Path:        "/user/remove-register",
 			HandlerFunc: controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.RemoveDateRegister)),
 		},

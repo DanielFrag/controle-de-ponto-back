@@ -17,7 +17,8 @@ type User struct {
 
 //DateRegister application model
 type DateRegister struct {
-	ID        bson.ObjectId `bson:"_id,omitempty"`
-	UserID    bson.ObjectId `bson:"userId"`
-	Timestamp time.Time     `bson:"timeStamp"`
+	ID          bson.ObjectId `bson:"_id,omitempty"`
+	UserID      bson.ObjectId `bson:"userId"`
+	Timestamp   time.Time     `bson:"timeStamp"`
+	Description string        `bson:"description"`
 }
