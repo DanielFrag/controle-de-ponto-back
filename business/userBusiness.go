@@ -1,8 +1,11 @@
 package business
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"gopkg.in/mgo.v2/bson"
 
@@ -25,7 +28,7 @@ func Authenticate(body []byte) (dto.AuthUser, error) {
 
 func authUser(client dto.Login) (dto.AuthUser, error) {
 	user := repository.GetUserByLogin(client.Login)
-	if user.Login == "" || user.Login != client.Login || user.Password != client.Pass {
+	if user.Login == "" || user.Login != client.Login || user.Password != SHA256Encrypt(client.Pass) {
 		return dto.AuthUser{}, errors.New("authentication error")
 	}
 	return dto.AuthUser{
@@ -88,4 +91,10 @@ func ExtractCustomTimestampFromBody(body []byte) (dto.DateRegister, error) {
 //ExtractIDFromString extract the property "id" from string
 func ExtractIDFromString(s string) bson.ObjectId {
 	return bson.ObjectIdHex(s)
+}
+
+//SHA256Encrypt encrypt string with sha256
+func SHA256Encrypt(s string) string {
+	h := sha256.New()
+	return fmt.Sprintf("%s", hex.EncodeToString(h.Sum([]byte(s))))
 }

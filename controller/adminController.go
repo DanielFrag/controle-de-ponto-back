@@ -39,6 +39,7 @@ func InsertUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if business.CheckNewUser(user) {
+		user.Password = business.SHA256Encrypt(user.Password)
 		repositoryError := repository.InsertUser(user)
 		if repositoryError != nil {
 			http.Error(w, "Error reading user from body "+repositoryError.Error(), http.StatusInternalServerError)
