@@ -29,7 +29,8 @@ func authUser(client dto.Login) (dto.AuthUser, error) {
 		return dto.AuthUser{}, errors.New("authentication error")
 	}
 	return dto.AuthUser{
-		ID: user.ID,
+		ID:    user.ID,
+		Login: user.Login,
 	}, nil
 }
 

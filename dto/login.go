@@ -12,4 +12,5 @@ type Login struct {
 type AuthUser struct {
 	ID      bson.ObjectId
 	Session string
+	Login   string
 }

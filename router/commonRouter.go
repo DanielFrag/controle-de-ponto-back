@@ -19,5 +19,11 @@ func GetCommonRoutes() []Route {
 			Path:        "/logout",
 			HandlerFunc: controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.UserLogout)),
 		},
+		Route{
+			Name:        "renew",
+			Method:      "GET",
+			Path:        "/renew-token",
+			HandlerFunc: controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.RenewToken)),
+		},
 	}
 }

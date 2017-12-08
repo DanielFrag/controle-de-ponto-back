@@ -112,6 +112,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	m := map[string]interface{}{
 		"token": tokenString,
+		"login": tkPayload.Login,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(utils.FormatJSON(m))
@@ -123,5 +124,16 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 	defer RecoverFunc(w, r)
 	user := context.Get(r, "user").(model.User)
 	repository.UpdateUserSession(user.ID, utils.GenerateRandomAlphaNumericString(15))
+	return
+}
+
+//RenewToken just send a valid token
+func RenewToken(w http.ResponseWriter, r *http.Request) {
+	str := context.Get(r, "token")
+	m := map[string]interface{}{
+		"token": str,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(utils.FormatJSON(m))
 	return
 }
