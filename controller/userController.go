@@ -80,18 +80,14 @@ func GetUserRegistersByDate(w http.ResponseWriter, r *http.Request) {
 
 //RemoveDateRegister remove a single date register by id
 func RemoveDateRegister(w http.ResponseWriter, r *http.Request) {
-	body, bodyReadError := ioutil.ReadAll(r.Body)
-	if bodyReadError != nil {
-		http.Error(w, "Error reading body from requested URL "+bodyReadError.Error(), http.StatusInternalServerError)
+	user := context.Get(r, "user").(model.User)
+	vars := mux.Vars(r)
+	if vars["id"] == "" {
+		http.Error(w, "Error, invalid date id", http.StatusBadRequest)
 		return
 	}
-	defer RecoverFunc(w, r)
-	dateRegisterID, extractIDError := business.ExtractIDFromBody(body)
-	if extractIDError != nil {
-		http.Error(w, "Error to extract date register id "+extractIDError.Error(), http.StatusInternalServerError)
-		return
-	}
-	removeDateRegisterError := repository.RemoveDateRegister(dateRegisterID)
+	dateRegisterID := business.ExtractIDFromString(vars["id"])
+	removeDateRegisterError := repository.RemoveDateRegister(dateRegisterID, user.ID)
 	if removeDateRegisterError != nil {
 		http.Error(w, "Error to remove the date register "+removeDateRegisterError.Error(), http.StatusInternalServerError)
 		return

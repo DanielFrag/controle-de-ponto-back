@@ -84,9 +84,7 @@ func ExtractCustomTimestampFromBody(body []byte) (dto.DateRegister, error) {
 	return register, err
 }
 
-//ExtractIDFromBody extract the property "id" from body
-func ExtractIDFromBody(body []byte) (bson.ObjectId, error) {
-	var jsonMap map[string]bson.ObjectId
-	err := json.Unmarshal(body, &jsonMap)
-	return jsonMap["id"], err
+//ExtractIDFromString extract the property "id" from string
+func ExtractIDFromString(s string) bson.ObjectId {
+	return bson.ObjectIdHex(s)
 }

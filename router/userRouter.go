@@ -22,7 +22,7 @@ func GetUserRoutes() []Route {
 		Route{
 			Name:        "removeRegister",
 			Method:      "DELETE",
-			Path:        "/user/remove-register",
+			Path:        "/user/remove-register/{id}",
 			HandlerFunc: controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.RemoveDateRegister)),
 		},
 	}

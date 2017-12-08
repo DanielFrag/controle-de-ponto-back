@@ -34,9 +34,12 @@ func GetUserRegistersByDate(userID bson.ObjectId, startDate time.Time, finishDat
 }
 
 //RemoveDateRegister find documents by date
-func RemoveDateRegister(registerID bson.ObjectId) error {
+func RemoveDateRegister(registerID bson.ObjectId, userID bson.ObjectId) error {
 	s := getSession()
 	defer s.Close()
 	dateRegisterCollection := s.DB("dateRegister").C("DateRegisters")
-	return dateRegisterCollection.RemoveId(registerID)
+	return dateRegisterCollection.Remove(bson.M{
+		"_id":    registerID,
+		"userId": userID,
+	})
 }
