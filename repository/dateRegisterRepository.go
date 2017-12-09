@@ -11,7 +11,7 @@ import (
 func InsertDateRegister(register model.DateRegister) error {
 	s := getSession()
 	defer s.Close()
-	dateRegisterCollection := s.DB("dateRegister").C("DateRegisters")
+	dateRegisterCollection := s.DB(getDbName()).C("DateRegisters")
 	return dateRegisterCollection.Insert(register)
 }
 
@@ -19,7 +19,7 @@ func InsertDateRegister(register model.DateRegister) error {
 func GetUserRegistersByDate(userID bson.ObjectId, startDate time.Time, finishDate time.Time) ([]interface{}, error) {
 	s := getSession()
 	defer s.Close()
-	dateRegisterCollection := s.DB("dateRegister").C("DateRegisters")
+	dateRegisterCollection := s.DB(getDbName()).C("DateRegisters")
 	var registers []interface{}
 	err := dateRegisterCollection.
 		Find(bson.M{
@@ -37,7 +37,7 @@ func GetUserRegistersByDate(userID bson.ObjectId, startDate time.Time, finishDat
 func RemoveDateRegister(registerID bson.ObjectId, userID bson.ObjectId) error {
 	s := getSession()
 	defer s.Close()
-	dateRegisterCollection := s.DB("dateRegister").C("DateRegisters")
+	dateRegisterCollection := s.DB(getDbName()).C("DateRegisters")
 	return dateRegisterCollection.Remove(bson.M{
 		"_id":    registerID,
 		"userId": userID,

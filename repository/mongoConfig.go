@@ -9,6 +9,7 @@ import (
 
 type dataStore struct {
 	session *mgo.Session
+	dbName  string
 }
 
 var ds dataStore
@@ -23,6 +24,10 @@ func StartDB() {
 	if ds.session == nil {
 		ds.session, err = mgo.Dial(mongoURL)
 	}
+	ds.dbName = os.Getenv("DB_NAME")
+	if ds.dbName == "" {
+		ds.dbName = "dateRegister"
+	}
 	if err != nil {
 		panic(err)
 	}
@@ -36,4 +41,8 @@ func StopDB() {
 //GetSession return the current DB session
 func getSession() *mgo.Session {
 	return ds.session.Clone()
+}
+
+func getDbName() string {
+	return ds.dbName
 }

@@ -9,7 +9,7 @@ import (
 func InsertUser(user model.User) error {
 	s := getSession()
 	defer s.Close()
-	usersCollection := s.DB("dateRegister").C("Users")
+	usersCollection := s.DB(getDbName()).C("Users")
 	return usersCollection.Insert(user)
 }
 
@@ -17,7 +17,7 @@ func InsertUser(user model.User) error {
 func GetUserByLogin(login string) model.User {
 	s := getSession()
 	defer s.Close()
-	usersCollection := s.DB("dateRegister").C("Users")
+	usersCollection := s.DB(getDbName()).C("Users")
 	var user model.User
 	usersCollection.
 		Find(bson.M{
@@ -31,7 +31,7 @@ func GetUserByLogin(login string) model.User {
 func GetUserByID(userID bson.ObjectId) (model.User, error) {
 	s := getSession()
 	defer s.Close()
-	usersCollection := s.DB("dateRegister").C("Users")
+	usersCollection := s.DB(getDbName()).C("Users")
 	var user model.User
 	err := usersCollection.
 		Find(bson.M{
@@ -45,7 +45,7 @@ func GetUserByID(userID bson.ObjectId) (model.User, error) {
 func UpdateUserSession(userID bson.ObjectId, session string) error {
 	s := getSession()
 	defer s.Close()
-	usersCollection := s.DB("dateRegister").C("Users")
+	usersCollection := s.DB(getDbName()).C("Users")
 	return usersCollection.Update(bson.M{
 		"_id": userID,
 	}, bson.M{
@@ -59,7 +59,7 @@ func UpdateUserSession(userID bson.ObjectId, session string) error {
 func UpdateUserPassword(userID bson.ObjectId, password string) error {
 	s := getSession()
 	defer s.Close()
-	usersCollection := s.DB("dateRegister").C("Users")
+	usersCollection := s.DB(getDbName()).C("Users")
 	return usersCollection.Update(bson.M{
 		"_id": userID,
 	}, bson.M{

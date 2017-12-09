@@ -50,7 +50,7 @@ func InsertUser(w http.ResponseWriter, r *http.Request) {
 		user.Password = business.GetDefaultPassword()
 		repositoryError := repository.InsertUser(user)
 		if repositoryError != nil {
-			http.Error(w, "Error reading user from body "+repositoryError.Error(), http.StatusInternalServerError)
+			http.Error(w, "Error inserting user "+repositoryError.Error(), http.StatusInternalServerError)
 			return
 		}
 	} else {
