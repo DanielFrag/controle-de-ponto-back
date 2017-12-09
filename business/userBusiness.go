@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 
 	"bitbucket.org/DanielFrag/gestor-de-ponto/utils"
 
@@ -27,6 +28,7 @@ func Authenticate(body []byte) (dto.AuthUser, error) {
 //CheckClientCredentials find the user on db and check its credentials
 func CheckClientCredentials(client dto.Login) (dto.AuthUser, error) {
 	user := repository.GetUserByLogin(client.Login)
+	log.Println(user)
 	if user.Login == "" || user.Login != client.Login || user.Password != EncryptString(client.Pass) {
 		return dto.AuthUser{}, errors.New("authentication error")
 	}
