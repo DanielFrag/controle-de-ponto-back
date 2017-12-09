@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"bitbucket.org/DanielFrag/gestor-de-ponto/business"
+	"bitbucket.org/DanielFrag/gestor-de-ponto/dto"
 	"bitbucket.org/DanielFrag/gestor-de-ponto/model"
 	"bitbucket.org/DanielFrag/gestor-de-ponto/repository"
 	"bitbucket.org/DanielFrag/gestor-de-ponto/utils"
@@ -129,6 +131,44 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
 
 //RenewToken just send a valid token
 func RenewToken(w http.ResponseWriter, r *http.Request) {
+	formatDefaultResponse(w, r)
+	return
+}
+
+//ChangePassword can update the user password
+func ChangePassword(w http.ResponseWriter, r *http.Request) {
+	body, bodyReadError := ioutil.ReadAll(r.Body)
+	if bodyReadError != nil {
+		http.Error(w, "Error reading body from requested URL "+bodyReadError.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer RecoverFunc(w, r)
+	var m map[string]string
+	jsonParseError := json.Unmarshal(body, &m)
+	if jsonParseError != nil || m["oldPassword"] == "" || m["newPassword"] == "" {
+		http.Error(w, "Error reading body data "+jsonParseError.Error(), http.StatusInternalServerError)
+		return
+	}
+	user := context.Get(r, "user").(model.User)
+	client := dto.Login{
+		Login: user.Login,
+		Pass:  m["oldPassword"],
+	}
+	_, credentialsError := business.CheckClientCredentials(client)
+	if credentialsError != nil {
+		http.Error(w, "Error to checking credentials: "+credentialsError.Error(), http.StatusInternalServerError)
+		return
+	}
+	updateError := repository.UpdateUserPassword(user.ID, business.SHA256Encrypt(m["newPassword"]))
+	if updateError != nil {
+		http.Error(w, "Error to update user password: "+updateError.Error(), http.StatusInternalServerError)
+		return
+	}
+	formatDefaultResponse(w, r)
+	return
+}
+
+func formatDefaultResponse(w http.ResponseWriter, r *http.Request) {
 	str := context.Get(r, "token")
 	m := map[string]interface{}{
 		"token": str,

@@ -54,3 +54,17 @@ func UpdateUserSession(userID bson.ObjectId, session string) error {
 		},
 	})
 }
+
+//UpdateUserPassword update the field password
+func UpdateUserPassword(userID bson.ObjectId, password string) error {
+	s := getSession()
+	defer s.Close()
+	usersCollection := s.DB("dateRegister").C("Users")
+	return usersCollection.Update(bson.M{
+		"_id": userID,
+	}, bson.M{
+		"$set": bson.M{
+			"password": password,
+		},
+	})
+}

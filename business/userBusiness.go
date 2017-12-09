@@ -23,10 +23,11 @@ func Authenticate(body []byte) (dto.AuthUser, error) {
 	if jsonError != nil {
 		return dto.AuthUser{}, jsonError
 	}
-	return authUser(user)
+	return CheckClientCredentials(user)
 }
 
-func authUser(client dto.Login) (dto.AuthUser, error) {
+//CheckClientCredentials find the user on db and check its credentials
+func CheckClientCredentials(client dto.Login) (dto.AuthUser, error) {
 	user := repository.GetUserByLogin(client.Login)
 	if user.Login == "" || user.Login != client.Login || user.Password != SHA256Encrypt(client.Pass) {
 		return dto.AuthUser{}, errors.New("authentication error")

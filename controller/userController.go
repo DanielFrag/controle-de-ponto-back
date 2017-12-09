@@ -38,12 +38,7 @@ func RegisterDate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error to register timestamp "+registerTimestampError.Error(), http.StatusInternalServerError)
 		return
 	}
-	str := context.Get(r, "token")
-	m := map[string]interface{}{
-		"token": str,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(utils.FormatJSON(m))
+	formatDefaultResponse(w, r)
 	return
 }
 
@@ -92,11 +87,6 @@ func RemoveDateRegister(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error to remove the date register "+removeDateRegisterError.Error(), http.StatusInternalServerError)
 		return
 	}
-	str := context.Get(r, "token")
-	m := map[string]interface{}{
-		"token": str,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(utils.FormatJSON(m))
+	formatDefaultResponse(w, r)
 	return
 }
