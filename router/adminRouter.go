@@ -11,7 +11,7 @@ func GetAdminRoutes() []Route {
 			Name:        "adminInsertUser",
 			Method:      "POST",
 			Path:        "/admin/insert-user",
-			HandlerFunc: controller.InsertUser, //controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.AdminUserValidatorMiddleware(controller.InsertUser))),
+			HandlerFunc: controller.TokenCheckerMiddleware(controller.UserMiddleware(controller.AdminUserValidatorMiddleware(controller.InsertUser))),
 		},
 	}
 }
