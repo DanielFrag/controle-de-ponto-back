@@ -1,17 +1,19 @@
 package controller
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
 
-	"bitbucket.org/DanielFrag/gestor-de-ponto/business"
+	"bitbucket.org/DanielFrag/gestor-de-ponto/dto"
 	"bitbucket.org/DanielFrag/gestor-de-ponto/model"
 	"bitbucket.org/DanielFrag/gestor-de-ponto/repository"
 	"bitbucket.org/DanielFrag/gestor-de-ponto/utils"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2/bson"
 )
 
 //RegisterDate register a custom timestamp
@@ -23,7 +25,9 @@ func RegisterDate(w http.ResponseWriter, r *http.Request) {
 	}
 	defer RecoverFunc(w, r)
 	user := context.Get(r, "user").(model.User)
-	register, registerError := business.ExtractCustomTimestampFromBody(body)
+	var register dto.DateRegister
+	registerError := json.Unmarshal(body, &register)
+	//register, registerError := business.ExtractCustomTimestampFromBody(body)
 	if registerError != nil {
 		http.Error(w, "Error to extract custom timestamp from body "+registerError.Error(), http.StatusBadRequest)
 		return
@@ -81,7 +85,7 @@ func RemoveDateRegister(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error, invalid date id", http.StatusBadRequest)
 		return
 	}
-	dateRegisterID := business.ExtractIDFromString(vars["id"])
+	dateRegisterID := bson.ObjectIdHex(vars["id"]) //business.ExtractIDFromString(vars["id"])
 	removeDateRegisterError := repository.RemoveDateRegister(dateRegisterID, user.ID)
 	if removeDateRegisterError != nil {
 		http.Error(w, "Error to remove the date register "+removeDateRegisterError.Error(), http.StatusInternalServerError)

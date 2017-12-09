@@ -16,7 +16,7 @@ var ds dataStore
 //StartDB initialize DB connection
 func StartDB() {
 	var err error
-	mongoURL := os.Getenv("MONGO_URL")
+	mongoURL := os.Getenv("MONGODB_URI")
 	if mongoURL == "" {
 		mongoURL = "mongodb://localhost:27017"
 	}

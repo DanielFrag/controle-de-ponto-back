@@ -7,8 +7,6 @@ import (
 	"errors"
 	"fmt"
 
-	"gopkg.in/mgo.v2/bson"
-
 	"bitbucket.org/DanielFrag/gestor-de-ponto/utils"
 
 	"bitbucket.org/DanielFrag/gestor-de-ponto/dto"
@@ -29,7 +27,7 @@ func Authenticate(body []byte) (dto.AuthUser, error) {
 //CheckClientCredentials find the user on db and check its credentials
 func CheckClientCredentials(client dto.Login) (dto.AuthUser, error) {
 	user := repository.GetUserByLogin(client.Login)
-	if user.Login == "" || user.Login != client.Login || user.Password != SHA256Encrypt(client.Pass) {
+	if user.Login == "" || user.Login != client.Login || user.Password != EncryptString(client.Pass) {
 		return dto.AuthUser{}, errors.New("authentication error")
 	}
 	return dto.AuthUser{
@@ -55,22 +53,12 @@ func CheckUserSession(user dto.AuthUser) bool {
 	return true
 }
 
-//ExtractUserFormBody return the User model extracted from requisition body
-func ExtractUserFormBody(body []byte) (model.User, error) {
-	var user model.User
-	var err error
-	err = json.Unmarshal(body, &user)
-	if err == nil {
-		err = isValidUserParams(user)
-	}
-	return user, err
-}
-
-func isValidUserParams(user model.User) error {
+//ValidateNewUserParams check user fields
+func ValidateNewUserParams(user model.User) error {
 	var userError error
 	if user.Level < 0 || user.Level > 1 {
 		userError = errors.New("Level must be 0 or 1")
-	} else if user.Login == "" || user.Password == "" {
+	} else if user.Login == "" {
 		userError = errors.New("No credentials provided")
 	}
 	return userError
@@ -82,20 +70,13 @@ func CheckNewUser(user model.User) bool {
 	return newUser.Login != user.Login
 }
 
-//ExtractCustomTimestampFromBody extract the timestamp register from json
-func ExtractCustomTimestampFromBody(body []byte) (dto.DateRegister, error) {
-	var register dto.DateRegister
-	err := json.Unmarshal(body, &register)
-	return register, err
-}
-
-//ExtractIDFromString extract the property "id" from string
-func ExtractIDFromString(s string) bson.ObjectId {
-	return bson.ObjectIdHex(s)
-}
-
-//SHA256Encrypt encrypt string with sha256
-func SHA256Encrypt(s string) string {
+//EncryptString encrypt string with sha256
+func EncryptString(s string) string {
 	h := sha256.New()
 	return fmt.Sprintf("%s", hex.EncodeToString(h.Sum([]byte(s))))
+}
+
+//GetDefaultPassword return the default password
+func GetDefaultPassword() string {
+	return EncryptString("password")
 }

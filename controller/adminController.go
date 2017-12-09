@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 
@@ -33,13 +34,20 @@ func InsertUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer RecoverFunc(w, r)
-	user, userError := business.ExtractUserFormBody(body)
+	var user model.User
+	var userError error
+	userError = json.Unmarshal(body, &user)
 	if userError != nil {
 		http.Error(w, "Error reading user from body "+userError.Error(), http.StatusInternalServerError)
 		return
 	}
+	userError = business.ValidateNewUserParams(user)
+	if userError != nil {
+		http.Error(w, "Error to validate user fields "+userError.Error(), http.StatusBadRequest)
+		return
+	}
 	if business.CheckNewUser(user) {
-		user.Password = business.SHA256Encrypt(user.Password)
+		user.Password = business.GetDefaultPassword()
 		repositoryError := repository.InsertUser(user)
 		if repositoryError != nil {
 			http.Error(w, "Error reading user from body "+repositoryError.Error(), http.StatusInternalServerError)

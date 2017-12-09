@@ -159,7 +159,7 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error to checking credentials: "+credentialsError.Error(), http.StatusInternalServerError)
 		return
 	}
-	updateError := repository.UpdateUserPassword(user.ID, business.SHA256Encrypt(m["newPassword"]))
+	updateError := repository.UpdateUserPassword(user.ID, business.EncryptString(m["newPassword"]))
 	if updateError != nil {
 		http.Error(w, "Error to update user password: "+updateError.Error(), http.StatusInternalServerError)
 		return
